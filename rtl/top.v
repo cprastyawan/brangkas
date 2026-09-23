@@ -8,7 +8,11 @@ module top (
     output led6_g,
     output led6_b
 );
-    assign led6_r = sw[0] & btn[0];
-    assign led6_g = sw[1] & btn[1];
-    assign led6_b = sw[2] & btn[2] & btn[3] | sw[3];
+
+ //   debouncer u_debouncer();
+ //   clk_divider u_clkdiv();
+
+    assign led6_r = sw[0];
+    assign led6_g = sw[1];
+    assign led6_b = sw[2];
 endmodule
