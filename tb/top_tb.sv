@@ -9,13 +9,11 @@ module top_tb();
     wire led6_b;
     
     initial begin
-        for(int i = 0; i < 16; i++) begin
-            @(posedge clk);
-            btn = i;
-            @(posedge clk);
-            sw = ~i;
-        end
-        #16
+        #1
+        rstn = 0;
+        #10
+        rstn = 1;
+        #1000
         $finish();
     end
 

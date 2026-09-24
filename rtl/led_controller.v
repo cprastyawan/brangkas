@@ -28,7 +28,7 @@ module led_controller (
             
             PIN_FALSE: begin
                 // LED Biru (0,0,1)
-                {led6_r, led6_g, led6_b} = 3'b001;
+                {led6_r, led6_g, led6_b} = 3'b100;
             end
             
             PIN_CHANGE: begin
