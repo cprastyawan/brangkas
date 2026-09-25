@@ -34,7 +34,7 @@ sim-vivado: $(BUILD_DIR_VIVADO)
 	@echo "exit" >> $(BUILD_DIR_VIVADO)/sim_workspace/xsim/cmd.tcl
 	
 	@echo "Running Simulation Engine..."
-	cd $(BUILD_DIR_VIVADO)/sim_workspace/xsim && ./top_tb.sh
+	cd $(BUILD_DIR_VIVADO)/sim_workspace/xsim && ./tb_top.sh
 	
 	@echo "Done! Waveform saved to: $(BUILD_DIR_VIVADO)/sim_workspace/xsim/waveform.vcd"
 

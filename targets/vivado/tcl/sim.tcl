@@ -13,10 +13,11 @@ create_project -in_memory -part $PART
 
 # 2. Read all RTL files AND your Testbench
 read_verilog [glob -nocomplain [file join $root_dir rtl *.v]]
-read_verilog -sv [glob -nocomplain [file join $root_dir tb *.sv]]
+read_verilog [glob -nocomplain [file join $root_dir tb  *.v]]
+set_property top tb_top [current_fileset -simset]
 
 # 3. Set the Top-Level Testbench Module
-set_property top top_tb [current_fileset -simset]
+set_property top tb_top [current_fileset -simset]
 
 # 4. Generate the bash scripts
 # This will create a folder at build/vivado/sim_workspace/xsim
