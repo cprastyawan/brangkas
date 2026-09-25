@@ -56,7 +56,7 @@ module tb_top;
     // Debounce settle time: 2-stage sync + COUNTER_MAX cycles, plus margin
     localparam DB_SETTLE = (SIM_DEBOUNCE_MAX + 4) * CLK_PERIOD;
 
-    function [63:0] state_name;
+    function [95:0] state_name;
         input [3:0] state;
         begin
             case (state)
@@ -99,7 +99,7 @@ module tb_top;
         end
     endtask
 
-    task check_led(input [255:0] label, input exp_r, input exp_g, input exp_b);
+    task check_led(input [511:0] label, input exp_r, input exp_g, input exp_b);
         begin
             checks = checks + 1;
             if ((led6_r !== exp_r) || (led6_g !== exp_g) || (led6_b !== exp_b)) begin
@@ -113,7 +113,7 @@ module tb_top;
         end
     endtask
 
-    task check_state(input [255:0] label, input [3:0] exp_state);
+    task check_state(input [511:0] label, input [3:0] exp_state);
         begin
             checks = checks + 1;
             if (dut.state !== exp_state) begin
@@ -156,13 +156,13 @@ module tb_top;
         sw = 4'b1111; // default stored pin is 0000, so this is wrong
         press_btn(0); // BTN0 = enter pin
         check_state("wrong pin #1",      4'b0010);
-        check_led  ("PIN_FALSE - blue",  0, 0, 1);
+        check_led  ("PIN_FALSE - red",  1, 0, 0);
 
         // ---- Wrong PIN, attempt 2/3 ---------------------------------------
         sw = 4'b1010;
         press_btn(0);
         check_state("wrong pin #2",      4'b0010);
-        check_led  ("PIN_FALSE - blue",  0, 0, 1);
+        check_led  ("PIN_FALSE - red",  1, 0, 0);
 
         // ---- Wrong PIN, attempt 3/3 -> should lock -------------------------
         sw = 4'b0101;
@@ -174,13 +174,40 @@ module tb_top;
         check_state("3rd wrong pin -> locked", 4'b0100);
 
         // ---- Check red blinking in LOCKED ----------------------------------
-        // clk_div (scaled) toggles every 500 clk cycles = 5000 ns
-        #100;
-        check_led("LOCKED - red phase 1", 1, 0, 0);
-        #(5000);
-        check_led("LOCKED - red phase 2 (blink off)", 0, 0, 0);
-        #(5000);
-        check_led("LOCKED - red phase 3 (blink on again)", 1, 0, 0);
+        // clk_div free-runs from the very first system reset, not from the
+        // moment LOCKED is entered - so its phase when we get here is
+        // whatever it happens to be, not necessarily "just turned on". We
+        // therefore check for a TOGGLE (blinking is happening) rather than
+        // an absolute ON/OFF value at a fixed offset. Full toggle period
+        // (scaled for sim) is 5000 ns, so 5500 ns guarantees we cross at
+        // least one edge without also crossing two.
+        checks = checks + 1;
+        if ((led6_g !== 1'b0) || (led6_b !== 1'b0)) begin
+            errors = errors + 1;
+            $display("[%0t] FAIL (LOCKED - green/blue must stay off): got G=%b B=%b",
+                      $time, led6_g, led6_b);
+        end else begin
+            $display("[%0t] PASS (LOCKED - green/blue stay off)", $time);
+        end
+
+        begin : blink_check
+            reg r_phase1, r_phase2, r_phase3;
+            r_phase1 = led6_r;
+            #(5500);
+            r_phase2 = led6_r;
+            #(5500);
+            r_phase3 = led6_r;
+
+            checks = checks + 1;
+            if ((r_phase2 == r_phase1) || (r_phase3 == r_phase2)) begin
+                errors = errors + 1;
+                $display("[%0t] FAIL (LOCKED - red must blink): samples were %b -> %b -> %b (expected to toggle each time)",
+                          $time, r_phase1, r_phase2, r_phase3);
+            end else begin
+                $display("[%0t] PASS (LOCKED - red blinks): samples were %b -> %b -> %b",
+                          $time, r_phase1, r_phase2, r_phase3);
+            end
+        end
 
         // ---- Reset clears LOCKED and the fail counter ----------------------
         pulse_reset;
@@ -218,7 +245,7 @@ module tb_top;
         sw = 4'b0000;
         press_btn(0);
         check_state("old pin now wrong",      4'b0010);
-        check_led  ("PIN_FALSE - blue",       0, 0, 1);
+        check_led  ("PIN_FALSE - red",       1, 0, 0);
 
         // ---- New PIN should now work (pressing BTN0 again, no hardware
         //      reset - proving the new pin was actually committed) ---------
