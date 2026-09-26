@@ -1,6 +1,5 @@
-# LibreLane flow config for `top`. Deliberately minimal: no clock (top.v
-# doesn't have one yet), no custom pin placement, default utilization.
-# Goal is just a GDSII to look at, not a working/optimized chip.
 DESIGN_NAME: top
 VERILOG_FILES: dir::../../rtl/*.v
 PDK: sky130A
+CLOCK_PORT: clk
+CLOCK_PERIOD: 8   # ns = 125 MHz, matches the real Zybo Z7 board clock
